@@ -3,11 +3,16 @@
 // file; this program copies it to the output path the grader expects. Node 22,
 // standard library only. Run: mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+const src = join(here, 'entry.png');
+// The gate takes at most 1 MiB and 1024 by 1024 pixels; refuse a bad build loudly.
+if (statSync(src).size > 1024 * 1024) {
+  throw new Error('entry.png is over the 1 MiB limit');
+}
 mkdirSync(outDir, { recursive: true });
-copyFileSync(join(here, 'entry.png'), join(outDir, 'entry.png'));
+copyFileSync(src, join(outDir, 'entry.png'));
